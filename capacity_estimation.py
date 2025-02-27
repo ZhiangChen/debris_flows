@@ -43,18 +43,30 @@ def check_capacity_csv():
     
 def process_capacity_estimation():
     processed_data = check_capacity_csv()
+    processed_folders = list(processed_data.keys())
+    print(f"Processed folders: {processed_folders}")
     # list all folders under the data folder
     folders = [f for f in os.listdir('data') if os.path.isdir(os.path.join('data', f))]
     for folder in folders:
         # check if the folder is already processed
         if folder in processed_data:
             continue
+        print(f"Processing folder: {folder}")
         # get the path of the folder
         folder_path = os.path.join('data', folder)
         # get the list of files in the folder
         files = os.listdir(folder_path)
+        # continue if the folder is empty
+        if len(files) == 0:
+            continue
         # check whether height_references.csv exists
-        assert 'height_references.csv' in files, 'height_references.csv is missing'
+        if 'height_references.csv' not in files:
+            # create a new height_references.csv file
+            with open(os.path.join(folder_path, 'height_references.csv'), 'w') as f:
+                f.write('spillway_elevation, 0\n')
+                f.write('crest_elevation, 0\n')
+                f.close()
+            continue
         # read the height_references.csv file
         with open(os.path.join(folder_path, 'height_references.csv'), 'r') as f:
             lines = f.readlines()
@@ -62,6 +74,9 @@ def process_capacity_estimation():
         # get the height references
         spillway_height = float(lines[0].split(',')[1])
         crest_height = float(lines[1].split(',')[1])
+
+        if spillway_height == 0 or crest_height == 0:
+            continue
 
         result = dict()
         result['Name'] = folder
@@ -87,10 +102,12 @@ def process_capacity_estimation():
                 f.close()
             continue
 
-        if 'pointcloud.las' in files:
+        # check if .las file exists
+        pc_files = [f for f in files if f.endswith('.las')]
+        if len(pc_files) == 1:
+            las_file = os.path.join(folder_path, pc_files[0])
             dsm_file = os.path.join(folder_path, 'dsm.tif')
             dem_file = os.path.join(folder_path, 'dem.tif')
-            las_file = os.path.join(folder_path, 'pointcloud.las')
             pointcloud2dem(las_file, dem_file, resolution=0.5, method='linear', classification_filter=[2])
             pointcloud2dem(las_file, dsm_file, resolution=0.5, method='linear')
             lower_spillway_capacity = estimate_volume(dsm_file, spillway_height, os.path.join(folder_path, 'dsm_spillway_masked.tif'))
@@ -105,9 +122,35 @@ def process_capacity_estimation():
             with open('data/capacity.csv', 'a') as f:
                 f.write(f"{result['Name']}, {result['Date']}, {result['Upper_spillway_capacity']}, {result['Lower_spillway_capacity']}, {result['Upper_crest_capacity']}, {result['Lower_crest_capacity']}\n")
                 f.close()
+
+        # if result is empty, raise an error
+        result_keys = list(result.keys())
+        assert len(result_keys) > 2, 'Error: No DSM or DEM or LAS file found'
         
+def sort_csv():
+    with open('data/capacity.csv', 'r') as f:
+        lines = f.readlines()
+        f.close()
+    data = []
+    for i in range(1, len(lines)):
+        name = lines[i].split(',')[0]
+        date = int(lines[i].split(',')[1])
+        upper_spillway_capacity = float(lines[i].split(',')[2])
+        lower_spillway_capacity = float(lines[i].split(',')[3])
+        upper_crest_capacity = float(lines[i].split(',')[4])
+        lower_crest_capacity = float(lines[i].split(',')[5])
+        data.append([name, date, upper_spillway_capacity, lower_spillway_capacity, upper_crest_capacity, lower_crest_capacity])
+    data = np.array(data)
+    # sort the data by name
+    data = data[data[:, 0].argsort()]
+    with open('data/capacity.csv', 'w') as f:
+        f.write('Name, Date, Upper_spillway_capacity, Lower_spillway_capacity, Upper_crest_capacity, Lower_crest_capacity\n')
+        for i in range(len(data)):
+            f.write(f"{data[i][0]}, {data[i][1]}, {data[i][2]}, {data[i][3]}, {data[i][4]}, {data[i][5]}\n")
+        f.close()
 
 if __name__ == "__main__":
     process_capacity_estimation()
+    sort_csv()
 
 

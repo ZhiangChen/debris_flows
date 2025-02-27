@@ -32,6 +32,12 @@ def interpolate_nodata(dem_data, nodata_value):
     valid_mask = (dem_data != nodata_value)
     # If your DEM uses NaN for nodata, you can do valid_mask = ~np.isnan(dem_data).
 
+    # find the largest contour of the valid_mask
+    # contours, _ = cv2.findContours(valid_mask.astype(np.uint8), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    # contours = sorted(contours, key=cv2.contourArea, reverse=True)
+    # valid_mask_contour = np.zeros_like(dem_data, dtype=np.uint8)
+    # cv2.drawContours(valid_mask_contour, contours, 0, 1, thickness=cv2.FILLED)
+    
     # 2. Create arrays of x,y coordinates for every pixel
     rows, cols = dem_data.shape
     # Note: we use np.arange(cols) for x, np.arange(rows) for y
@@ -139,6 +145,17 @@ def estimate_volume(dem_path, reference_elevation, save_path=None):
     # Linearly interpolate the elevation values at nodata pixels
     dem_filled = interpolate_nodata(dem_data, nodata_value)
 
+    # find the largest contour in dem_data
+    dem_data_mask = np.where(dem_data != nodata_value, 1, 0)
+    contours, _ = cv2.findContours(dem_data_mask.astype(np.uint8), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    contours = sorted(contours, key=cv2.contourArea, reverse=True)
+    largest_contour = contours[0]
+    dem_data_contour = np.zeros_like(dem_data, dtype=np.uint8)
+    cv2.drawContours(dem_data_contour, [largest_contour], 0, 1, thickness=cv2.FILLED)
+
+    # keep the values of the largest contour in dem_filled
+    dem_filled = np.where(dem_data_contour, dem_filled, 9999)
+
     # Get a mask of DEM cells below the reference elevation
     below_ref_mask = dem_filled < reference_elevation
 
@@ -149,20 +166,29 @@ def estimate_volume(dem_path, reference_elevation, save_path=None):
     contours = sorted(contours, key=cv2.contourArea, reverse=True)
 
     # remove small contours 
-    area_threshold = 10
+    area_threshold = 20
     contours = [contour for contour in contours if cv2.contourArea(contour) > area_threshold]
 
-    # Calculate the centroid of each contour
-    centroids = [np.mean(contour, axis=0).squeeze() for contour in contours]
-
-    # Find the contour with the centroid closest to the center of the DEM
-    centroid_distances = [np.linalg.norm([center_x - centroid[0], center_y - centroid[1]]) for centroid in centroids]
-    closest_contour_idx = np.argmin(centroid_distances)
-    closest_contour = contours[closest_contour_idx]
-
-    # Update the mask to only include the closest contour
+    largest_contour = contours[0]
     ref_mask = np.zeros_like(dem_filled, dtype=np.uint8)
-    cv2.drawContours(ref_mask, [closest_contour], -1, 1, thickness=cv2.FILLED)
+    cv2.drawContours(ref_mask, [largest_contour], 0, 1, thickness=cv2.FILLED)
+
+    # # Calculate the centroid of each contour
+    # centroids = [np.mean(contour, axis=0).squeeze() for contour in contours]
+
+    # if len(centroids) == 0:
+    #     return 0
+
+    # # Find the contour with the centroid closest to the center of the DEM
+    # centroid_distances = [np.linalg.norm([center_x - centroid[0], center_y - centroid[1]]) for centroid in centroids]
+    # closest_contour_idx = np.argmin(centroid_distances)
+    # closest_contour = contours[closest_contour_idx]
+
+    # # Update the mask to only include the closest contour
+    # ref_mask = np.zeros_like(dem_filled, dtype=np.uint8)
+    # cv2.drawContours(ref_mask, [closest_contour], -1, 1, thickness=cv2.FILLED)
+
+
 
     # Calculate the volume between the reference elevation and the DEM
     volume = np.sum((reference_elevation - dem_filled) * ref_mask) * pixel_width * pixel_height
