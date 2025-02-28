@@ -3,8 +3,13 @@
 .AppleDouble
 .LSOverride
 
-# data folder
-data/
+# data 
+*.las 
+*.laz
+*.tif
+height_references.csv
+
+~$*.xlsx
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

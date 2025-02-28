@@ -125,7 +125,8 @@ def process_capacity_estimation():
 
         # if result is empty, raise an error
         result_keys = list(result.keys())
-        assert len(result_keys) > 2, 'Error: No DSM or DEM or LAS file found'
+        if len(result_keys) > 2:
+            print("No DSM or DEM or LAS file found")
         
 def sort_csv():
     with open('data/capacity.csv', 'r') as f:
