@@ -1,8 +1,8 @@
 # UAV Lidar-Based Debris Basin Capacity Assessment Following the 2025 LA Wildfire
 
-Zhiang Chen
-Emily Geyman
-Michael Lamb
+Zhiang Chen*, Emily Geyman, Michael Lamb
+
+\*zhiang.chen@caltech.edu
 
 Feb 27, 2025
 
@@ -24,7 +24,7 @@ We conducted UAV surveys at an altitude of 100–120 meters above ground level, 
 
 We collected UAV LiDAR data from debris basins affected by the Eaton wildfire to assess post-fire sediment accumulation and remaining basin capacity. Table 1 provides an overview of the surveys conducted, including flight dates and locations. Figure 1 illustrate points clouds from the UAV lidar surveys and data processing. 
 
-### Table 1: Debris Basin Flight Dates
+#### Table 1: Debris Basin Flight Dates
 
 | Debris Basin    | Flight Dates                                      |
 |----------------|--------------------------------------------------|
@@ -42,7 +42,17 @@ We collected UAV LiDAR data from debris basins affected by the Eaton wildfire to
 | SierraMadreDam| 20250219, 20250223                                |
 | Sunnyside     | 20250210, 20250214, 20250219, 20250223            |
 
+#### Figure 1: Point clouds from UAV lidar surveys: Auburn, Bailey, Sierra Mandre Dam, and Sunnyside
 
+<div style="display: flex; justify-content: center;">
+    <img src="pointcloud_screenshots/auburn.png" alt="Auburn" width="45%">
+    <img src="pointcloud_screenshots/bailey.png" alt="Bailey" width="45%">
+</div>
+
+<div style="display: flex; justify-content: center;">
+    <img src="pointcloud_screenshots/sierramadredam.png" alt="Sierra Madre Dam" width="45%">
+    <img src="pointcloud_screenshots/sunnyside.png" alt="Sunnyside" width="45%">
+</div>
 
 ### Capacity Estimation
 
