@@ -6,6 +6,7 @@ import matplotlib.dates as mdates
 from datetime import datetime
 import matplotlib.ticker as mticker
 import pandas as pd
+from datetime import timedelta
 
 def read_capacity_estimation_data():
     data = dict()
@@ -73,6 +74,8 @@ def plot_capacity(data):
     spillway_line = None
     crest_line = None
 
+
+
     all_formatted_dates = []
     for i, name in enumerate(names):
 
@@ -121,15 +124,25 @@ def plot_capacity(data):
         if crest_line is None:
             crest_line = crest_plot[0]  # Get Line2D instance
 
+        
+        storm_dates = [datetime.strptime(str(d), "%Y%m%d") for d in [20250127, 20250206, 20250212]]
+
+        for storm_date in storm_dates:
+            start_date = storm_date - timedelta(days=1)  # Start of shading (2 days before)
+            end_date = storm_date + timedelta(days=1)    # End of shading (2 days after)
+            axs[row, col].axvspan(start_date, end_date, color='gray', alpha=0.3, label="Storm Event")
+
         # Set exact dates as ticks (evenly spaced)
         axs[row, col].set_xticks(all_formatted_dates)
-        axs[row, col].set_xticklabels([d.strftime("%m/%d") for d in all_formatted_dates], rotation=45)
+        axs[row, col].set_xticklabels([d.strftime("%m/%d") for d in all_formatted_dates], rotation=45, fontsize=20)
 
         # Format y-axis with comma separators (1,000 or 1,000,000)
         axs[row, col].yaxis.set_major_formatter(mticker.FuncFormatter(lambda x, _: f"{x:,.0f}"))
+        # Set y-axis font size
+        axs[row, col].tick_params(axis='y', labelsize=20)
 
         # Set title
-        axs[row, col].set_title(name)
+        axs[row, col].set_title(name, fontsize=20)
         # Set dotted-line grid
         axs[row, col].grid(True, linestyle='-.', linewidth=0.5)
 
@@ -139,13 +152,13 @@ def plot_capacity(data):
         fig.delaxes(axs[row, col])
 
     # Adjust suptitle and legend positions
-    fig.suptitle("Debris Basin Capacity", fontsize=20, y=0.97)
-    fig.legend([spillway_line, crest_line], ["Spillway", "Crest"], loc="upper center", fontsize=14, 
-               ncol=2, frameon=False, bbox_to_anchor=(0.5, 0.95))
+    fig.suptitle("Remaining Debris Basin Capacity", fontsize=24, y=0.97)
+    fig.legend([spillway_line, crest_line], ["Spillway", "Crest"], loc="upper center", fontsize=20, 
+               ncol=2, frameon=False, bbox_to_anchor=(0.5, 0.955))
 
     # Add overall x and y labels
-    fig.text(0.5, 0.04, "Date", ha="center", fontsize=16)  # X-axis label at bottom center
-    fig.text(0.04, 0.5, "Capacity", va="center", rotation="vertical", fontsize=16)  # Y-axis label at left center
+    fig.text(0.5, 0.04, "Date", ha="center", fontsize=24)  # X-axis label at bottom center
+    fig.text(0.02, 0.5, "Remaining debris basin capacity, cubic yard", va="center", rotation="vertical", fontsize=24)  # Y-axis label at left center
 
     # Adjust layout to fit everything properly
     plt.tight_layout(rect=[0.05, 0.05, 1, 0.95])  # Ensures space for labels
@@ -194,6 +207,10 @@ def plot_capacity_raito(data, max_capacity_data):
             0.5 * (name_data[date]['Upper_crest_capacity'] + name_data[date]['Lower_crest_capacity'])/max_capacity_data[name]
             for date in dates
         ]
+        # limit the ratio to 1
+        middle_spillway_capacities = [min(1, x) for x in middle_spillway_capacities]
+        middle_crest_capacities = [min(1, x) for x in middle_crest_capacities]
+
         variance_spillway = [
             0.5 * abs(name_data[date]['Upper_spillway_capacity'] - name_data[date]['Lower_spillway_capacity'])/max_capacity_data[name]
             for date in dates
@@ -215,15 +232,24 @@ def plot_capacity_raito(data, max_capacity_data):
         if crest_line is None:
             crest_line = crest_plot[0]  # Get Line2D instance
 
+        storm_dates = [datetime.strptime(str(d), "%Y%m%d") for d in [20250127, 20250206, 20250212]]
+
+        for storm_date in storm_dates:
+            start_date = storm_date - timedelta(days=1)  # Start of shading (2 days before)
+            end_date = storm_date + timedelta(days=1)    # End of shading (2 days after)
+            axs[row, col].axvspan(start_date, end_date, color='gray', alpha=0.3, label="Storm Event")
+
         # Set exact dates as ticks (evenly spaced)
         axs[row, col].set_xticks(all_formatted_dates)
-        axs[row, col].set_xticklabels([d.strftime("%m/%d") for d in all_formatted_dates], rotation=45)
+        axs[row, col].set_xticklabels([d.strftime("%m/%d") for d in all_formatted_dates], rotation=45, fontsize=20)
 
         # Format y-axis with percentage
         axs[row, col].yaxis.set_major_formatter(mticker.FuncFormatter(lambda x, _: f"{x:.0%}"))
+        # Set y-axis font size
+        axs[row, col].tick_params(axis='y', labelsize=20)
 
         # Set title
-        axs[row, col].set_title(name)
+        axs[row, col].set_title(name, fontsize=20)
         # dot dash grid
         axs[row, col].grid(True, linestyle='-.', linewidth=0.5)
 
@@ -234,13 +260,13 @@ def plot_capacity_raito(data, max_capacity_data):
         fig.delaxes(axs[row, col])
 
     # Adjust suptitle and legend positions
-    fig.suptitle("Debris Basin Capacity (By Design Capacity Ratio)", fontsize=20, y=0.97)
-    fig.legend([spillway_line, crest_line], ["Spillway", "Crest"], loc="upper center", fontsize=14, 
-               ncol=2, frameon=False, bbox_to_anchor=(0.5, 0.95))
+    fig.suptitle("Remaining Debris Basin Capacity relative to the Design Capacity", fontsize=24, y=0.97)
+    fig.legend([spillway_line, crest_line], ["Spillway", "Crest"], loc="upper center", fontsize=20, 
+               ncol=2, frameon=False, bbox_to_anchor=(0.5, 0.955))
 
     # Add overall x and y labels
-    fig.text(0.5, 0.04, "Date", ha="center", fontsize=16)  # X-axis label at bottom center
-    fig.text(0.04, 0.5, "Capacity Ratio", va="center", rotation="vertical", fontsize=16)  # Y-axis label at left center
+    fig.text(0.5, 0.04, "Date", ha="center", fontsize=24)  # X-axis label at bottom center
+    fig.text(0.02, 0.5, "Remaining debris basin capacity relative to the design capacity, %", va="center", rotation="vertical", fontsize=24)  # Y-axis label at left center
 
     # Adjust layout to fit everything properly
     plt.tight_layout(rect=[0.05, 0.05, 1, 0.95])  # Ensures space for labels
@@ -251,16 +277,18 @@ def plot_capacity_raito(data, max_capacity_data):
 def save_results(data, max_capacity_data):
     with open('data/results.csv', 'w') as f:
         writer = csv.writer(f)
-        writer.writerow(['Name', 'Date', 'Spillway Capacity', 'Crest Capacity', 'Spillway Capacity Ratio', 'Crest Capacity Ratio', "Max Design Capacity"])
+        writer.writerow(['Name', 'Date', 'Spillway Capacity (cy)', 'Spillway Capacity Uncertainty (cy)', 'Crest Capacity (cy)', 'Crest Capacity Uncertainty (cy)', 'Spillway Capacity Ratio', 'Crest Capacity Ratio', "Max Design Capacity (cy)"])
         for name, dates in data.items():
             for date, capacities in dates.items():
                 spillway_capacity = int(0.5 * (capacities['Upper_spillway_capacity'] + capacities['Lower_spillway_capacity']))
+                spillway_capacity_uncertainty = int(0.5 * abs(capacities['Upper_spillway_capacity'] - capacities['Lower_spillway_capacity']))
                 crest_capacity = int(0.5 * (capacities['Upper_crest_capacity'] + capacities['Lower_crest_capacity']))
+                crest_capacity_uncertainty = int(0.5 * abs(capacities['Upper_crest_capacity'] - capacities['Lower_crest_capacity']))
                 spillway_capacity_ratio = spillway_capacity / max_capacity_data[name]
                 spillway_capacity_ratio = "{:.2%}".format(spillway_capacity_ratio)
                 crest_capacity_ratio = crest_capacity / max_capacity_data[name]
                 crest_capacity_ratio = "{:.2%}".format(crest_capacity_ratio)
-                writer.writerow([name, date, spillway_capacity, crest_capacity, spillway_capacity_ratio, crest_capacity_ratio, max_capacity_data[name]])
+                writer.writerow([name, date, spillway_capacity, spillway_capacity_uncertainty, crest_capacity, crest_capacity_uncertainty, spillway_capacity_ratio, crest_capacity_ratio, max_capacity_data[name]])
         
 # main 
 if __name__ == '__main__':
