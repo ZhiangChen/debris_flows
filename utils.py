@@ -7,6 +7,25 @@ import os
 import copy
 from rasterio.transform import from_origin
 
+def clear_las():
+    data_folders = [os.path.join('data', f) for f in os.listdir('data') if os.path.isdir(os.path.join('data', f))]
+    # remove all las files in the data folder
+    for folder in data_folders:
+        files = os.listdir(folder)
+        for f in files:
+            if f.endswith('.las'):
+                os.remove(os.path.join(folder, f))
+
+def clear_data():
+    data_folders = [os.path.join('data', f) for f in os.listdir('data') if os.path.isdir(os.path.join('data', f))]
+    # remove all files in the data folder except .csv .las
+    for folder in data_folders:
+        files = os.listdir(folder)
+        for f in files:
+            if f.endswith('.csv') or f.endswith('.las'):
+                continue
+            os.remove(os.path.join(folder, f))
+
 def interpolate_nodata(dem_data, nodata_value):
     """
     Interpolate and fill nodata cells in a 2D DEM array using
@@ -169,6 +188,8 @@ def estimate_volume(dem_path, reference_elevation, save_path=None):
     area_threshold = 20
     contours = [contour for contour in contours if cv2.contourArea(contour) > area_threshold]
 
+    if len(contours) == 0:
+        return 0
     largest_contour = contours[0]
     ref_mask = np.zeros_like(dem_filled, dtype=np.uint8)
     cv2.drawContours(ref_mask, [largest_contour], 0, 1, thickness=cv2.FILLED)
@@ -295,7 +316,7 @@ def pointcloud2dem(
     #    with pixel sizes (resolution, resolution).
     #    But note that in many GIS conventions, 'y' decreases as we go down rows,
     #    so we pass a negative for pixel height if we want a north-up raster.
-    transform = from_origin(min_x, max_y, resolution, -resolution)
+    transform = from_origin(min_x, min_y, resolution, -resolution)
 
     # We'll assume a single-band float32 raster.
     # If you know your CRS, you can parse it from the LAS header or specify directly
@@ -316,7 +337,6 @@ def pointcloud2dem(
         "crs": crs_info  # or a known string like "EPSG:xxxxx"
     }
 
-    # 8. Write the DEM to a GeoTIFF file
     with rasterio.open(dem_path, "w", **new_profile) as dst:
         dst.write(grid_z, 1)
     
@@ -324,6 +344,7 @@ def pointcloud2dem(
 
 
 if __name__ == "__main__":
+    None
     # Example usage
     # dem_file = "./data/auburn.tif"
     # ref_elev = 1286  # feet, matching DEM units
@@ -343,8 +364,11 @@ if __name__ == "__main__":
     # print("Ground points extracted and saved.")
 
     # Example usage for converting point cloud to DEM
-    las_file = "./data/bailey_basin.las"
-    dem_file = "./data/bailey_basin_ground_dem.tif"
-    pointcloud2dem(las_file, dem_file, resolution=0.5, method='linear', classification_filter=[2])
-    dem_file = "./data/bailey_basin_dem.tif"
-    pointcloud2dem(las_file, dem_file, resolution=0.5, method='linear')
+    las_file = "./data/Sunnyside_20250223/20250223_SunnySide.las"
+    dem_file = "./data/Sunnyside_20250223/dem.tif"
+    #pointcloud2dem(las_file, dem_file, resolution=0.5, method='linear', classification_filter=[2])
+    # dem_file = "./data/bailey_basin_dem.tif"
+    # pointcloud2dem(las_file, dem_file, resolution=0.5, method='linear')
+
+    #clear_data()
+    clear_las()

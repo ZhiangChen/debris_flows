@@ -3,6 +3,7 @@ from utils import *
 import csv
 import os
 import numpy as np
+from natsort import natsorted 
 
 def check_capacity_csv():
     capaticy_csv = 'data/capacity.csv'
@@ -47,6 +48,8 @@ def process_capacity_estimation():
     print(f"Processed folders: {processed_folders}")
     # list all folders under the data folder
     folders = [f for f in os.listdir('data') if os.path.isdir(os.path.join('data', f))]
+    # sort the folders
+    folders = natsorted(folders)
     for folder in folders:
         # check if the folder is already processed
         if folder in processed_data:

@@ -113,14 +113,14 @@ def plot_capacity(data):
         ]
 
         # Plot middle spillway capacity with variance as error bars
-        spillway_plot = axs[row, col].errorbar(formatted_dates, middle_spillway_capacities, yerr=variance_spillway, fmt='-o', label="Spillway", capsize=3)
+        # spillway_plot = axs[row, col].errorbar(formatted_dates, middle_spillway_capacities, yerr=variance_spillway, fmt='-o', label="Spillway", capsize=3)
 
         # Plot middle crest capacity with variance as error bars
         crest_plot = axs[row, col].errorbar(formatted_dates, middle_crest_capacities, yerr=variance_crest, fmt='-s', label="Crest", capsize=3)
 
         # Store line objects for legend (only once)
-        if spillway_line is None:
-            spillway_line = spillway_plot[0]  # Get Line2D instance
+        # if spillway_line is None:
+        #     spillway_line = spillway_plot[0]  # Get Line2D instance
         if crest_line is None:
             crest_line = crest_plot[0]  # Get Line2D instance
 
@@ -153,8 +153,7 @@ def plot_capacity(data):
 
     # Adjust suptitle and legend positions
     fig.suptitle("Remaining Debris Basin Capacity", fontsize=24, y=0.97)
-    fig.legend([spillway_line, crest_line], ["Spillway", "Crest"], loc="upper center", fontsize=20, 
-               ncol=2, frameon=False, bbox_to_anchor=(0.5, 0.955))
+    # fig.legend([spillway_line, crest_line], ["Spillway", "Crest"], loc="upper center", fontsize=20, ncol=2, frameon=False, bbox_to_anchor=(0.5, 0.955))
 
     # Add overall x and y labels
     fig.text(0.5, 0.04, "Date", ha="center", fontsize=24)  # X-axis label at bottom center
@@ -221,14 +220,14 @@ def plot_capacity_raito(data, max_capacity_data):
         ]
 
         # Plot middle spillway capacity with variance as error bars
-        spillway_plot = axs[row, col].errorbar(formatted_dates, middle_spillway_capacities, yerr=variance_spillway, fmt='-o', label="Spillway", capsize=3)
+        # spillway_plot = axs[row, col].errorbar(formatted_dates, middle_spillway_capacities, yerr=variance_spillway, fmt='-o', label="Spillway", capsize=3)
 
         # Plot middle crest capacity with variance as error bars
         crest_plot = axs[row, col].errorbar(formatted_dates, middle_crest_capacities, yerr=variance_crest, fmt='-s', label="Crest", capsize=3)
 
         # Store line objects for legend (only once)
-        if spillway_line is None:
-            spillway_line = spillway_plot[0]  # Get Line2D instance
+        # if spillway_line is None:
+        #     spillway_line = spillway_plot[0]  # Get Line2D instance
         if crest_line is None:
             crest_line = crest_plot[0]  # Get Line2D instance
 
@@ -261,8 +260,7 @@ def plot_capacity_raito(data, max_capacity_data):
 
     # Adjust suptitle and legend positions
     fig.suptitle("Remaining Debris Basin Capacity relative to the Design Capacity", fontsize=24, y=0.97)
-    fig.legend([spillway_line, crest_line], ["Spillway", "Crest"], loc="upper center", fontsize=20, 
-               ncol=2, frameon=False, bbox_to_anchor=(0.5, 0.955))
+    # fig.legend([spillway_line, crest_line], ["Spillway", "Crest"], loc="upper center", fontsize=20, ncol=2, frameon=False, bbox_to_anchor=(0.5, 0.955))
 
     # Add overall x and y labels
     fig.text(0.5, 0.04, "Date", ha="center", fontsize=24)  # X-axis label at bottom center
@@ -293,8 +291,8 @@ def save_results(data, max_capacity_data):
 # main 
 if __name__ == '__main__':
     data = read_capacity_estimation_data()
-    #plot_capacity(data)
+    plot_capacity(data)
     max_capacity_data = read_capacity_design_data(data)
-    #plot_capacity_raito(data, max_capacity_data)
+    plot_capacity_raito(data, max_capacity_data)
     save_results(data, max_capacity_data)
 
